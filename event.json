@@ -1,4 +1,13 @@
 {
+  "filters": [{
+      "Name": "instance-state-name",
+      "Values": ["running"]
+    },
+    {
+      "Name": "tag:aws:autoscaling:groupName",
+      "Values": ["testing-servers-group"]
+    }
+  ],
   "body": "{\"message\": \"hello world\"}",
   "resource": "/{proxy+}",
   "path": "/path/to/resource",

@@ -1,46 +1,24 @@
 import json
 import boto3
 import botostubs
-from botocore.vendored import requests
 
-ec2 = boto3.client('ec2')   # type: botostubs
-
-
-def fetchEC2(filters):
-    response = ec2.describe_instances(Filters=filters)
-    return response
+ec2 = boto3.resource('ec2')   # type: botostubs
 
 
 def lambda_handler(event, context):
 
-    response = fetchEC2([
-        {
-            'Name': 'instance-state-name',
-            'Values': ['running']
-        },
-        {
-            'Name': 'tag:aws:autoscaling:groupName',
-            'Values': ['testing-servers-group']
-        }
-    ])
+    instances = ec2.instances.filter(Filters=event["filters"])
 
-    for reservation in response['Reservations']:
-        for instance in reservation['Instances']:
-            instance_id = instance['InstanceId']
-            print(instance_id)
-#            ec2.filterterminate_instances(instance_ids=)
+    terminated_instance_ids = []
+    for instance in instances:
+        # ec2.instances.filter(InstanceIds=[instance.id]).terminate()
+        terminated_instance_ids.append(instance.id)
 
-    try:
-        ip = requests.get("http://checkip.amazonaws.com/")
-    except requests.RequestException as e:
-        print(e)
-
-        raise e
+    print(terminated_instance_ids)
 
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": "hello world",
-            "location": ip.text.replace("\n", "")
+            "terminated_instance_ids": terminated_instance_ids
         }),
     }
